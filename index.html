@@ -3,220 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolão por Jogo - Copa 2026</title>
+    <title>Bolão do Jacim - World Cup 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
 
     <header class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-md">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-green-400">⚽ Bolão Copa 2026 — R$ 5,00 por Jogo</h1>
-            <nav class="flex space-x-2">
-                <button onclick="mudarAba('publico')" id="btn-publico" class="px-4 py-2 rounded bg-green-600 text-white font-medium hover:bg-green-500 transition">Ver Jogos</button>
-                <button onclick="acessarAdmin()" id="btn-admin" class="px-4 py-2 rounded bg-gray-700 text-gray-300 font-medium hover:bg-gray-600 transition">⚙️ Admin</button>
-            </nav>
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-xl font-bold text-green-400">⚽ Central do Bolão — R$ 5,00 por Jogo</h1>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-4">
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
         
-        <!-- ================= ABA PÚBLICA ================= -->
-        <section id="aba-publico" class="space-y-6">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
-                <h2 class="text-lg font-semibold mb-2 text-yellow-400">Como funciona:</h2>
-                <p class="text-sm text-gray-400">Cada jogo é um bolão independente! Mande <strong>R$ 5,00</strong> no Pix por palpite e informe os placares no WhatsApp do organizador. Quem acertar leva a bolada do jogo!</p>
-            </div>
+        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
+            <h2 class="text-lg font-semibold mb-2 text-yellow-400">Como participar:</h2>
+            <p class="text-sm text-gray-400">Cada jogo é um bolão independente! Mande <strong>R$ 5,00</strong> no Pix por palpite e informe os seus placares no WhatsApp do organizador. Quem acertar leva a bolada do jogo!</p>
+        </div>
 
-            <div>
-                <h2 class="text-xl font-bold mb-4">🏟️ Lista de Bolões</h2>
-                <div id="lista-jogos-publico" class="grid gap-4 md:grid-cols-2">
-                    <!-- Inserido via JS -->
+        <div>
+            <h2 class="text-xl font-bold mb-4">🏟️ Bolões e Resultados</h2>
+            <div id="lista-jogos-publico" class="grid gap-4 md:grid-cols-2">
                 </div>
-            </div>
-        </section>
-
-        <!-- ================= ABA ADMIN ================= -->
-        <section id="aba-admin" class="hidden space-y-6">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
-                <h2 class="text-lg font-bold text-red-400 mb-3">Painel do Administrador</h2>
-                
-                <div class="border-t border-gray-700 pt-3">
-                    <h3 class="text-sm font-semibold text-gray-300 mb-2">Cadastrar Novo Jogo:</h3>
-                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        <input type="text" id="add-time-a" placeholder="Time A" class="bg-gray-900 border border-gray-700 p-2 rounded text-sm text-white">
-                        <input type="text" id="add-time-b" placeholder="Time B" class="bg-gray-900 border border-gray-700 p-2 rounded text-sm text-white">
-                        <input type="datetime-local" id="add-data" class="bg-gray-900 border border-gray-700 p-2 rounded text-sm text-white">
-                        <button onclick="cadastrarJogo()" class="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded text-sm font-medium">Adicionar Jogo</button>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <h2 class="text-xl font-bold mb-4">⚙️ Gerenciar Entradas do WhatsApp e Encerrar</h2>
-                <div id="lista-jogos-admin" class="space-y-4">
-                    <!-- Inserido via JS -->
-                </div>
-            </div>
-        </section>
+        </div>
 
     </main>
 
     <script>
-        // CONFIGURAÇÕES DO SISTEMA
-        const SENHA_ADMIN = "sua_senha_aqui"; 
+        // CONFIGURAÇÕES DO SUPABASE (IGUAL NAS DUAS TELAS)
         const SUPABASE_URL = "https://seu-projeto.supabase.co"; 
         const SUPABASE_KEY = "sua-anon-key-aqui";
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let isAdminAutenticado = false;
-
-        function mudarAba(aba) {
-            if (aba === 'admin' && !isAdminAutenticado) return;
-            
-            document.getElementById('aba-publico').classList.toggle('hidden', aba !== 'publico');
-            document.getElementById('aba-admin').classList.toggle('hidden', aba !== 'admin');
-            
-            document.getElementById('btn-publico').className = aba === 'publico' ? 'px-4 py-2 rounded bg-green-600 text-white font-medium' : 'px-4 py-2 rounded bg-gray-700 text-gray-300';
-            document.getElementById('btn-admin').className = aba === 'admin' ? 'px-4 py-2 rounded bg-green-600 text-white font-medium' : 'px-4 py-2 rounded bg-gray-700 text-gray-300';
-            
-            carregarDados();
-        }
-
-        function acessarAdmin() {
-            if (isAdminAutenticado) {
-                mudarAba('admin');
-                return;
-            }
-            const senha = prompt("Digite a senha do Administrador:");
-            if (senha === SENHA_ADMIN) {
-                isAdminAutenticado = true;
-                mudarAba('admin');
-            } else if (senha !== null) {
-                alert("Senha incorreta!");
-            }
-        }
 
         async function carregarDados() {
             const { data: jogos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
             const { data: palpites } = await _supabase.from('palpites').select('*');
+            const { data: ganhadores } = await _supabase.from('ganhadores_jogos').select('*'); // Tabela auxiliar de ganhadores
             
             if (!jogos || !palpites) return;
 
-            renderizarPublico(jogos, palpites);
-            if (isAdminAutenticado) {
-                renderizarAdmin(jogos, palpites);
-            }
-        }
-
-        async function cadastrarJogo() {
-            const timeA = document.getElementById('add-time-a').value.trim();
-            const timeB = document.getElementById('add-time-b').value.trim();
-            const dataJogo = document.getElementById('add-data').value;
-
-            if(!timeA || !timeB) return alert("Preencha os nomes dos times!");
-
-            await _supabase.from('jogos').insert([{ time_a: timeA, time_b: timeB, data_jogo: dataJogo || null }]);
-            
-            document.getElementById('add-time-a').value = '';
-            document.getElementById('add-time-b').value = '';
-            carregarDados();
-        }
-
-        async function salvarPalpiteWhats(jogoId) {
-            const nome = document.getElementById(`whats-nome-${jogoId}`).value.trim();
-            const palA = parseInt(document.getElementById(`whats-pal-a-${jogoId}`).value);
-            const palB = parseInt(document.getElementById(`whats-pal-b-${jogoId}`).value);
-
-            if (!nome || isNaN(palA) || isNaN(palB)) return alert("Preencha o nome e o placar completo!");
-
-            await _supabase.from('palpites').insert([{ nome_apostador: nome, jogo_id: jogoId, palpite_a: palA, palpite_b: palB }]);
-            alert(`Palpite de ${nome} adicionado!`);
-            carregarDados();
-        }
-
-        async function encerrarJogo(jogoId) {
-            const golsA = parseInt(document.getElementById(`res-a-${jogoId}`).value);
-            const golsB = parseInt(document.getElementById(`res-b-${jogoId}`).value);
-
-            if (isNaN(golsA) || isNaN(golsB)) return alert("Preencha o resultado final!");
-
-            // 1. Atualiza resultado do jogo
-            await _supabase.from('jogos').update({ gols_a: golsA, gols_b: golsB, encerrado: true }).eq('id', jogoId);
-
-            // 2. Coleta palpites desse bolão específico
-            const { data: lista } = await _supabase.from('palpites').select('*').eq('jogo_id', jogoId);
-            
-            if (!lista || lista.length === 0) {
-                alert("Jogo finalizado. Nenhum palpite foi registrado para esta partida.");
-                carregarDados();
-                return;
-            }
-
-            let acertaramPlacarCheio = [];
-            let acertaramTendencia = [];
-
-            lista.forEach(p => {
-                const acertouVencedorOuEmpate = (golsA > golsB && p.palpite_a > p.palpite_b) || 
-                                                (golsA < golsB && p.palpite_a < p.palpite_b) || 
-                                                (golsA === golsB && p.palpite_a === p.palpite_b);
-                
-                if (p.palpite_a === golsA && p.palpite_b === golsB) {
-                    acertaramPlacarCheio.push(p.nome_apostador);
-                } else if (acertouVencedorOuEmpate) {
-                    acertaramTendencia.push(p.nome_apostador);
-                }
-            });
-
-            // 3. Cálculos Financeiros (R$ 5,00 por entrada)
-            const valorEntrada = 5.00;
-            const qtdPalpites = lista.length;
-            const bruto = qtdPalpites * valorEntrada;
-            
-            const comissaoFatia = 0.20; // 20% do caixa fica com você
-            const seuLucro = bruto * comissaoFatia;
-            const premioDisponivel = bruto - seuLucro;
-
-            let ganhadores = [];
-            let criterio = "";
-
-            if (acertaramPlacarCheio.length > 0) {
-                ganhadores = acertaramPlacarCheio;
-                criterio = "Acertou o Placar Exato";
-            } else if (acertaramTendencia.length > 0) {
-                ganhadores = acertaramTendencia;
-                criterio = "Acertou Vencedor ou Empate (Ninguém cravou o placar)";
-            }
-
-            // Exibição do relatório reservado no Admin
-            let relatorio = `🏁 RECONCILIAÇÃO DO BOLÃO\n\n`;
-            relatorio += `💰 Caixa do Jogo:\n`;
-            relatorio += `• Entradas recebidas: ${qtdPalpites} (R$ ${bruto.toFixed(2)})\n`;
-            relatorio += `• Taxa do Organizador (20%): R$ ${seuLucro.toFixed(2)}\n`;
-            relatorio += `• Bolada líquida do prêmio: R$ ${premioDisponivel.toFixed(2)}\n\n`;
-
-            if (ganhadores.length > 0) {
-                const corteCada = premioDisponivel / ganhadores.length;
-                relatorio += `🏆 GANHADORES DESTE BOLÃO [${criterio}]:\n`;
-                ganhadores.forEach(nome => {
-                    relatorio += `👉 ${nome} — Recebe: R$ ${corteCada.toFixed(2)}\n`;
-                });
-            } else {
-                relatorio += `⚠️ Ninguém acertou nada! O prêmio líquido de R$ ${premioDisponivel.toFixed(2)} fica guardado para acumular.`;
-            }
-
-            alert(relatorio);
-            carregarDados();
-        }
-
-        function renderizarPublico(jogos, palpites) {
             const listaDiv = document.getElementById('lista-jogos-publico');
             listaDiv.innerHTML = '';
 
             jogos.forEach(j => {
                 const palpitesDoJogo = palpites.filter(p => p.jogo_id === j.id);
+                const ganhadoresDesteJogo = ganhadores ? ganhadores.filter(g => g.jogo_id === j.id) : [];
+                
                 let htmlPalpites = '';
-
                 palpitesDoJogo.forEach(p => {
                     htmlPalpites += `
                         <div class="flex justify-between items-center text-xs bg-gray-900 p-2 rounded border border-gray-750">
@@ -226,12 +61,26 @@
                     `;
                 });
 
+                let htmlGanhadores = '';
+                if (j.encerrado) {
+                    if (ganhadoresDesteJogo.length > 0) {
+                        htmlGanhadores = `
+                            <div class="mt-3 bg-green-950/40 border border-green-800 p-2 rounded-lg">
+                                <span class="text-xs font-bold text-green-400 block mb-1">🏆 Ganhadores do Bolão:</span>
+                                <p class="text-xs text-green-300 font-medium">${ganhadoresDesteJogo.map(g => g.nome_ganhador).join(', ')}</p>
+                            </div>
+                        `;
+                    } else {
+                        htmlGanhadores = `<div class="mt-3 bg-gray-850 border border-gray-750 p-2 rounded-lg text-xs text-gray-400 italic">Ninguém acertou os critérios. Prêmio acumulado!</div>`;
+                    }
+                }
+
                 listaDiv.innerHTML += `
                     <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col justify-between shadow">
                         <div>
                             <div class="flex justify-between text-xs text-gray-400 mb-2">
                                 <span>${j.data_jogo ? new Date(j.data_jogo).toLocaleDateString('pt-BR') : 'A definir'}</span>
-                                <span class="${j.encerrado ? 'text-red-400 font-bold' : 'text-green-400'}">${j.encerrado ? 'Encerrado' : 'Inscrições Abertas'}</span>
+                                <span class="${j.encerrado ? 'text-red-400 font-bold' : 'text-green-400'}">${j.encerrado ? 'Encerrado' : 'Aberto'}</span>
                             </div>
                             <div class="flex justify-center items-center gap-3 text-center my-3">
                                 <span class="font-bold flex-1 text-right">${j.time_a}</span>
@@ -241,51 +90,12 @@
                                 <span class="font-bold flex-1 text-left">${j.time_b}</span>
                             </div>
                         </div>
+                        ${htmlGanhadores}
                         <div class="mt-4 border-t border-gray-700 pt-3 space-y-1.5">
-                            <div class="flex justify-between items-center mb-1">
-                                <h4 class="text-xs font-semibold text-gray-400">Palpites Registrados (${palpitesDoJogo.length}):</h4>
-                                <span class="text-[10px] bg-green-950 text-green-400 px-1.5 rounded font-bold">Acumulado: R$ ${(palpitesDoJogo.length * 5).toFixed(2)}</span>
-                            </div>
+                            <h4 class="text-xs font-semibold text-gray-400">Palpites Confirmados (${palpitesDoJogo.length}):</h4>
                             <div class="grid gap-1 max-h-32 overflow-y-auto pr-1">
-                                ${htmlPalpites || '<p class="text-xs text-gray-500 italic">Nenhum palpite para este jogo.</p>'}
+                                ${htmlPalpites || '<p class="text-xs text-gray-500 italic">Nenhum palpite ainda.</p>'}
                             </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderizarAdmin(jogos, palpites) {
-            const adminDiv = document.getElementById('lista-jogos-admin');
-            adminDiv.innerHTML = '';
-
-            jogos.forEach(j => {
-                const palpitesDoJogo = palpites.filter(p => p.jogo_id === j.id);
-                adminDiv.innerHTML += `
-                    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 grid md:grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <h3 class="text-sm font-bold text-green-400">📝 Adicionar Palpite do Whats</h3>
-                            <p class="text-xs text-gray-400 font-semibold">${j.time_a} x ${j.time_b} (${palpitesDoJogo.length} cadastrados)</p>
-                            <div class="flex gap-2">
-                                <input type="text" id="whats-nome-${j.id}" placeholder="Nome do Amigo" class="bg-gray-900 border border-gray-700 p-1.5 rounded text-xs flex-1 text-white">
-                                <input type="number" id="whats-pal-a-${j.id}" placeholder="0" class="bg-gray-900 border border-gray-700 p-1.5 rounded text-xs w-12 text-center text-white">
-                                <span class="text-xs self-center">x</span>
-                                <input type="number" id="whats-pal-b-${j.id}" placeholder="0" class="bg-gray-900 border border-gray-700 p-1.5 rounded text-xs w-12 text-center text-white">
-                                <button onclick="salvarPalpiteWhats('${j.id}')" class="bg-green-600 hover:bg-green-500 p-1.5 rounded text-xs text-white px-3 font-medium">Salvar</button>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-2 border-t md:border-t-0 md:border-l border-gray-700 pt-3 md:pt-0 md:pl-4 flex flex-col justify-center">
-                            <h3 class="text-sm font-bold text-yellow-400">🏁 Resultado Final Real</h3>
-                            ${j.encerrado ? 
-                                `<p class="text-xs text-gray-400">Encerrado: <strong class="text-white">${j.gols_a} x ${j.gols_b}</strong></p>` : 
-                                `<div class="flex gap-2 items-center">
-                                    <input type="number" id="res-a-${j.id}" placeholder="0" class="bg-gray-900 border border-gray-700 p-1.5 rounded text-xs w-14 text-center text-white">
-                                    <span class="text-xs">x</span>
-                                    <input type="number" id="res-b-${j.id}" placeholder="0" class="bg-gray-900 border border-gray-700 p-1.5 rounded text-xs w-14 text-center text-white">
-                                    <button onclick="encerrarJogo('${j.id}')" class="bg-red-600 hover:bg-red-500 p-1.5 rounded text-xs text-white font-medium flex-1">Fechar e Calcular Ganhadores</button>
-                                </div>`
-                            }
                         </div>
                     </div>
                 `;
@@ -293,6 +103,7 @@
         }
 
         carregarDados();
+        setInterval(carregarDados, 15000); // Atualiza sozinho a cada 15 segundos
     </script>
 </body>
 </html>
