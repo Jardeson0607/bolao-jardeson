@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolão da COPA 2026</title>
+    <title>Bolão da Adega</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -13,7 +13,7 @@
         <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <span class="text-2xl">🏆</span>
-                <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Bolão Jacim</h1>
+                <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Bolão da Adega</h1>
             </div>
             <span class="text-xs font-bold bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20 shadow-inner">R$ 5,00 por Jogo</span>
         </div>
@@ -28,7 +28,7 @@
                 <p class="text-sm text-slate-400 leading-relaxed">Cada partida funciona como um bolão único e independente. Faça o Pix de <strong>R$ 5,00</strong> por palpite e envie o seu placar clicando no botão ao lado. Quem acertar leva a premiação da rodada!</p>
             </div>
             <div class="flex shrink-0">
-                <a href="https://wa.me/5588997263753?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20bol%C3%A3o%20da%20Copa!" 
+                <a href="https://wa.me/5588996536826?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20Bol%C3%A3o%20da%20Adega!" 
                    target="_blank" 
                    class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl shadow-lg border border-green-500/30 flex items-center justify-center gap-2 transition duration-200 hover:scale-[1.02] active:scale-[0.98]">
                     <span>💬</span> Enviar Palpite no Whats
@@ -52,6 +52,30 @@
         const SUPABASE_KEY = "sb_publishable_IsntZwbiFHOs3RuhFnFs6g_8xA6-z-2"; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // Gerador de Siglas Inteligente e Universal
+        function gerarSigla(nomeTime) {
+            let limpo = nomeTime.trim().toUpperCase().replace(/\s+/g, ' ');
+            
+            // Exceções clássicas mundiais para manter o padrão FIFA de TV
+            if (limpo === "ESTADOS UNIDOS" || limpo === "EEUU") return "USA";
+            if (limpo === "REPUBLICA TCHECA") return "CZE";
+            if (limpo === "ALEMANHA") return "GER";
+            if (limpo === "INGLATERRA") return "ENG";
+            
+            let palavras = limpo.split(' ').filter(p => p.length > 2); // ignora "de", "do", "da"
+
+            // Se for nome composto (Ex: República Tcheca, Costa Rica)
+            if (palavras.length >= 2) {
+                let p1 = palavras[0][0]; // Primeira letra da primeira palavra
+                let p2 = palavras[1][0]; // Primeira letra da segunda palavra
+                let ultima = palavras[1][palavras[1].length - 1]; // Última letra da segunda palavra
+                return p1 + p2 + ultima;
+            }
+            
+            // Se for nome simples (Ex: Brasil)
+            return limpo.substring(0, 3);
+        }
+
         async function carregarDados() {
             const { data: jogos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
             const { data: palpites } = await _supabase.from('palpites').select('*');
@@ -66,12 +90,19 @@
                 const palpitesDoJogo = palpites.filter(p => p.jogo_id === j.id);
                 const ganhadoresDesteJogo = ganhadores ? ganhadores.filter(g => g.jogo_id === j.id) : [];
                 
+                const siglaA = gerarSigla(j.time_a);
+                const siglaB = gerarSigla(j.time_b);
+
                 let htmlPalpites = '';
                 palpitesDoJogo.forEach(p => {
                     htmlPalpites += `
-                        <div class="flex justify-between items-center text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/40">
-                            <span class="text-slate-300 font-medium">${p.nome_apostador}</span>
-                            <span class="bg-slate-800 text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md border border-slate-700/60 shadow-sm">${p.palpite_a} × ${p.palpite_b}</span>
+                        <div class="flex justify-between items-center text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/40 shadow-sm">
+                            <span class="text-slate-300 font-semibold tracking-wide">${p.nome_apostador}</span>
+                            <div class="bg-slate-800 text-amber-400 font-mono font-bold px-2.5 py-1 rounded-md border border-slate-700/60 flex items-center gap-1.5 min-w-[115px] justify-center tracking-tight">
+                                <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaA}</span>
+                                <span>${p.palpite_a} × ${p.palpite_b}</span>
+                                <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaB}</span>
+                            </div>
                         </div>
                     `;
                 });
@@ -128,10 +159,10 @@
                         </div>
                         ${htmlGanhadores}
                         <div class="mt-5 border-t border-slate-800/80 pt-4 space-y-2">
-                            <div class="flex justify-between items-center">
+                            <div class="flex justify-between items-center mb-1">
                                 <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Palpites Registrados</h4>
                             </div>
-                            <div class="grid gap-1.5 max-h-36 overflow-y-auto pr-1">
+                            <div class="grid gap-1.5 max-h-40 overflow-y-auto pr-1">
                                 ${htmlPalpites || '<p class="text-xs text-slate-600 italic py-1">Nenhum palpite computado.</p>'}
                             </div>
                         </div>
