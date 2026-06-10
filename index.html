@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolão da Copa 2026</title>
+    <title>Bolão da Adega 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -21,10 +21,19 @@
 
     <main class="max-w-4xl mx-auto p-4 space-y-8 mt-4">
         
-        <div class="bg-gradient-to-br from-slate-900 to-slate-900/60 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group">
+        <div class="bg-gradient-to-br from-slate-900 to-slate-900/60 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="absolute -right-10 -top-10 text-8xl opacity-5 group-hover:scale-110 transition duration-500 pointer-events-none">⚽</div>
-            <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 mb-1.5">Como Funciona o Jogo?</h2>
-            <p class="text-sm text-slate-400 leading-relaxed max-w-2xl">Cada partida funciona como um bolão único e independente. Faça o Pix de <strong>R$ 5,00</strong> por palpite e envie o placar no WhatsApp do organizador. Quem cravar leva a bolada acumulada da rodada!</p>
+            <div class="max-w-2xl">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 mb-1.5">Como Funciona o Jogo?</h2>
+                <p class="text-sm text-slate-400 leading-relaxed">Cada partida funciona como um bolão único e independente. Faça o Pix de <strong>R$ 5,00</strong> por palpite e envie o seu placar clicando no botão ao lado. Quem acertar leva a premiação da rodada!</p>
+            </div>
+            <div class="flex shrink-0">
+                <a href="https://wa.me/5588997263753?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20bol%C3%A3o%20da%20Copa!" 
+                   target="_blank" 
+                   class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl shadow-lg border border-green-500/30 flex items-center justify-center gap-2 transition duration-200 hover:scale-[1.02] active:scale-[0.98]">
+                    <span>💬</span> Enviar Palpite no Whats
+                </a>
+            </div>
         </div>
 
         <div class="space-y-4">
@@ -40,7 +49,7 @@
 
     <script>
         const SUPABASE_URL = "https://vjbjbjdqsjibxfeguger.supabase.co"; 
-        const SUPABASE_KEY = "sb_publishable_IsntZwbiFHOs3RuhFnFs6g_8xA6-z-2"; // Lembre de atualizar para a anon key se necessário
+        const SUPABASE_KEY = "sb_publishable_IsntZwbiFHOs3RuhFnFs6g_8xA6-z-2"; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function carregarDados() {
@@ -70,19 +79,25 @@
                 let htmlGanhadores = '';
                 if (j.encerrado) {
                     if (ganhadoresDesteJogo.length > 0) {
+                        const totalArrecadado = palpitesDoJogo.length * 5.00;
+                        const premioLiquido = totalArrecadado * 0.80; 
+                        const valorCadaUm = premioLiquido / ganhadoresDesteJogo.length;
+
+                        const textoGanhadores = ganhadoresDesteJogo.map(g => `${g.nome_ganhador} (Recebe: R$ ${valorCadaUm.toFixed(2)})`).join(', ');
+
                         htmlGanhadores = `
                             <div class="mt-3.5 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-start gap-2">
-                                <span class="text-base mt-0.5">💰</span>
+                                <span class="text-base mt-0.5">🏆</span>
                                 <div>
-                                    <span class="text-[11px] font-bold text-emerald-400 block uppercase tracking-wider">Ganhadores do Prêmio:</span>
-                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">${ganhadoresDesteJogo.map(g => g.nome_ganhador).join(', ')}</p>
+                                    <span class="text-[11px] font-bold text-emerald-400 block uppercase tracking-wider">Premiação do Vencedor:</span>
+                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">${textoGanhadores}</p>
                                 </div>
                             </div>
                         `;
                     } else {
                         htmlGanhadores = `
                             <div class="mt-3.5 bg-slate-800/40 border border-slate-700/40 p-3 rounded-xl text-xs text-slate-400 italic flex items-center gap-2">
-                                <span>🔒</span> Ninguém acertou os critérios. Valor acumulado!
+                                <span>🔒</span> Bolão encerrado sem vencedor!
                             </div>
                         `;
                     }
@@ -99,7 +114,7 @@
                                     <span>📅 ${dataFormatada}</span>
                                     <span>⏰ ${horaFormatada}</span>
                                 </div>
-                                <span class="${j.encerrado ? 'text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20' : 'text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20 animate-pulse'}">
+                                <span class="${j.encerrado ? 'text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20' : 'text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20'}">
                                     ${j.encerrado ? 'Finalizado' : 'Aberto'}
                                 </span>
                             </div>
@@ -114,8 +129,7 @@
                         ${htmlGanhadores}
                         <div class="mt-5 border-t border-slate-800/80 pt-4 space-y-2">
                             <div class="flex justify-between items-center">
-                                <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Palpites (${palpitesDoJogo.length})</h4>
-                                <span class="text-[11px] bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full font-bold border border-green-500/20">Banca: R$ ${(palpitesDoJogo.length * 5).toFixed(2)}</span>
+                                <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Palpites Registrados</h4>
                             </div>
                             <div class="grid gap-1.5 max-h-36 overflow-y-auto pr-1">
                                 ${htmlPalpites || '<p class="text-xs text-slate-600 italic py-1">Nenhum palpite computado.</p>'}
@@ -127,7 +141,7 @@
         }
 
         carregarDados();
-        setInterval(carregarDados, 10000); // Auto-refresh a cada 10s para parecer profissional
+        setInterval(carregarDados, 10000); 
     </script>
 </body>
 </html>
