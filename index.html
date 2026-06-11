@@ -52,27 +52,17 @@
         const SUPABASE_KEY = "sb_publishable_IsntZwbiFHOs3RuhFnFs6g_8xA6-z-2"; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Gerador de Siglas Inteligente e Universal
         function gerarSigla(nomeTime) {
             let limpo = nomeTime.trim().toUpperCase().replace(/\s+/g, ' ');
-            
-            // Exceções clássicas mundiais para manter o padrão FIFA de TV
             if (limpo === "ESTADOS UNIDOS" || limpo === "EEUU") return "USA";
             if (limpo === "REPUBLICA TCHECA") return "CZE";
             if (limpo === "ALEMANHA") return "GER";
             if (limpo === "INGLATERRA") return "ENG";
             
-            let palavras = limpo.split(' ').filter(p => p.length > 2); // ignora "de", "do", "da"
-
-            // Se for nome composto (Ex: República Tcheca, Costa Rica)
+            let palavras = limpo.split(' ').filter(p => p.length > 2);
             if (palavras.length >= 2) {
-                let p1 = palavras[0][0]; // Primeira letra da primeira palavra
-                let p2 = palavras[1][0]; // Primeira letra da segunda palavra
-                let ultima = palavras[1][palavras[1].length - 1]; // Última letra da segunda palavra
-                return p1 + p2 + ultima;
+                return palavras[0][0] + palavras[1][0] + palavras[1][palavras[1].length - 1];
             }
-            
-            // Se for nome simples (Ex: Brasil)
             return limpo.substring(0, 3);
         }
 
@@ -95,9 +85,13 @@
 
                 let htmlPalpites = '';
                 palpitesDoJogo.forEach(p => {
+                    // Pega o horário correto do palpite
+                    const horaPalpite = p.criado_em ? new Date(p.criado_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
+                    const tagHora = horaPalpite ? `<span class="text-[10px] text-slate-500 font-mono font-normal ml-1">(${horaPalpite})</span>` : '';
+
                     htmlPalpites += `
                         <div class="flex justify-between items-center text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/40 shadow-sm">
-                            <span class="text-slate-300 font-semibold tracking-wide">${p.nome_apostador}</span>
+                            <span class="text-slate-300 font-semibold tracking-wide">${p.nome_apostador}${tagHora}</span>
                             <div class="bg-slate-800 text-amber-400 font-mono font-bold px-2.5 py-1 rounded-md border border-slate-700/60 flex items-center gap-1.5 min-w-[115px] justify-center tracking-tight">
                                 <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaA}</span>
                                 <span>${p.palpite_a} × ${p.palpite_b}</span>
@@ -114,7 +108,8 @@
                         const premioLiquido = totalArrecadado * 0.80; 
                         const valorCadaUm = premioLiquido / ganhadoresDesteJogo.length;
 
-                        const textoGanhadores = ganhadoresDesteJogo.map(g => `${g.nome_ganhador} (Recebe: R$ ${valorCadaUm.toFixed(2)})`).join(', ');
+                        // Retirada a palavra "Recebe:" conforme pedido
+                        const textoGanhadores = ganhadoresDesteJogo.map(g => `${g.nome_ganhador} (R$ ${valorCadaUm.toFixed(2)})`).join(', ');
 
                         htmlGanhadores = `
                             <div class="mt-3.5 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-start gap-2">
@@ -134,8 +129,15 @@
                     }
                 }
 
-                const dataFormatada = j.data_jogo ? new Date(j.data_jogo).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}) : '--/--';
-                const horaFormatada = j.data_jogo ? new Date(j.data_jogo).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                // Correção do fuso-horário adicionando as 3 horas subtraídas pelo formato UTC do banco
+                let dataFormatada = '--/--';
+                let horaFormatada = '--:--';
+                if (j.data_jogo) {
+                    const dataJogoObjeto = new Date(j.data_jogo);
+                    dataJogoObjeto.setHours(dataJogoObjeto.getHours() + 3);
+                    dataFormatada = dataJogoObjeto.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+                    horaFormatada = dataJogoObjeto.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                }
 
                 listaDiv.innerHTML += `
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition duration-300 hover:border-slate-700">
