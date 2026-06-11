@@ -31,7 +31,7 @@
             <div class="max-w-xl space-y-3">
                 <div>
                     <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 mb-1.5">Como Funciona o Jogo?</h2>
-                    <p class="text-sm text-slate-400 leading-relaxed">Cada partida funciona como um bolão único e independente. Faça o Pix de <strong>R$ 5,00</strong> por palpite e envie o seu placar clicando no botão ao lado. Quem acertar leva a premiação da rodada!</p>
+                    <p class="text-sm text-slate-400 leading-relaxed">Cada partida funciona como um bolão único e independente. Faça o Pix de <strong>R$ 5,00</strong> por palpite e envie o seu placar clicando no botão ao lado. <strong class="text-emerald-400">É obrigatório enviar o comprovante do PIX junto com o seu palpite!</strong></p>
                 </div>
                 
                 <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3 max-w-md">
@@ -46,7 +46,7 @@
             </div>
             
             <div class="flex shrink-0">
-                <a href="https://wa.me/5588997263753?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20Bol%C3%A3o%20do%20Jacim!%0A%0A%F0%9F%93%8C%20JOGO%3A%20%0A%F0%9F%91%A4%20NOME%20DO%20APOSTADOR%3A%20%0A%E2%9A%BD%20PLACAR%20(Ex%3A%202x1)%3A%20" 
+                <a href="https://wa.me/558897263753?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20Bol%C3%A3o%20do%20Jacim!%0A%0A%F0%9F%93%8C%20JOGO%3A%20%0A%F0%9F%91%A4%20NOME%20DO%20APOSTADOR%3A%20%0A%E2%9A%BD%20PLACAR%20(Ex%3A%202x1)%3A%20%0A%0A%E2%9A%A0%EF%B8%8F%20N%C3%83O%20ESQUE%C3%87A%20DE%20ANEXAR%20O%20COMPROVANTE%20DO%20PIX%20AQUI%20EMBAIXO!" 
                    target="_blank" 
                    class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-xl shadow-lg border border-green-500/30 flex items-center justify-center gap-2 transition duration-200 hover:scale-[1.02] active:scale-[0.98]">
                     <span>💬</span> Enviar Palpite no Whats
@@ -66,7 +66,7 @@
                 <div class="grid gap-4 sm:grid-cols-2 text-xs text-slate-400">
                     <div class="flex gap-2.5 items-start bg-slate-950/40 p-3 rounded-xl border border-slate-900/50">
                         <span class="text-base shrink-0">💰</span>
-                        <p><strong class="text-slate-200 block mb-0.5">Valor da Entrada:</strong> Cada palpite custa exatamente R$ 5,00. O palpite só é validado e inserido no site após a confirmação do pagamento.</p>
+                        <p><strong class="text-slate-200 block mb-0.5">Valor da Entrada:</strong> Cada palpite custa exatamente R$ 5,00. O palpite só é validado e inserido no site após a confirmação do pagamento e o envio do comprovante correspondente.</p>
                     </div>
                     <div class="flex gap-2.5 items-start bg-slate-950/40 p-3 rounded-xl border border-slate-900/50">
                         <span class="text-base shrink-0">⏰</span>
@@ -126,7 +126,7 @@
             }, 2500);
         }
 
-        function compartilharSite() {
+        function compartirSite() {
             const texto = `🏆 *BOLÃO DO JACIM* 🏆\n\nVenha faturar nos palpites dos jogos de hoje! Acesse o site oficial, mande seu placar e acompanhe ao vivo:\n🔗 ${window.location.href}`;
             if (navigator.share) {
                 navigator.share({ title: 'Bolão do Jacim', text: texto, url: window.location.href });
@@ -218,7 +218,7 @@
                     if (ganhadoresDesteJogo.length > 0) {
                         const textoGanhadores = ganhadoresDesteJogo.map(g => `${g.nome_ganhador} (R$ ${valorCadaUm.toFixed(2)})`).join(', ');
                         htmlGanhadores = `
-                            <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-start gap-2">
+                            <div class="mt-3.5 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-start gap-2">
                                 <span class="text-base mt-0.5">🏆</span>
                                 <div>
                                     <span class="text-[11px] font-bold text-emerald-400 block uppercase tracking-wider">Premiação do Vencedor:</span>
@@ -228,7 +228,7 @@
                         `;
                     } else {
                         htmlGanhadores = `
-                            <div class="bg-slate-800/40 border border-slate-700/40 p-3 rounded-xl text-xs text-slate-400 italic flex items-center gap-2">
+                            <div class="mt-3.5 bg-slate-800/40 border border-slate-700/40 p-3 rounded-xl text-xs text-slate-400 italic flex items-center gap-2">
                                 <span>🔒</span> Bolão encerrado sem vencedor!
                             </div>
                         `;
