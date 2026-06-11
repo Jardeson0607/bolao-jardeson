@@ -29,6 +29,12 @@
             </div>
         </div>
 
+        <div class="flex gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800 overflow-x-auto">
+            <button onclick="filtrarJogos('todos')" id="btn-filtro-todos" class="bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shrink-0">Todos</button>
+            <button onclick="filtrarJogos('abertos')" id="btn-filtro-abertos" class="bg-slate-950 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shrink-0">Abertos</button>
+            <button onclick="filtrarJogos('finalizados')" id="btn-filtro-finalizados" class="bg-slate-950 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shrink-0">Finalizados</button>
+        </div>
+
         <div class="space-y-4">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">Controle por Partida Comercial</h2>
             <div id="lista-jogos-admin" class="space-y-5"></div>
@@ -40,16 +46,48 @@
         const SUPABASE_KEY = "sb_publishable_IsntZwbiFHOs3RuhFnFs6g_8xA6-z-2";
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function carregarDados() {
-            const { data: juegos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
-            const { data: palpites } = await _supabase.from('palpites').select('*');
-            if (!juegos || !palpites) return;
+        let cacheJogos = [];
+        let cachePalpites = [];
+        let filtroAtual = 'todos';
 
+        async function carregarDados() {
+            const { data: jogos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
+            const { data: palpites } = await _supabase.from('palpites').select('*');
+            if (!jogos || !palpites) return;
+
+            cacheJogos = jogos;
+            cachePalpites = palpites;
+            renderizarJogos();
+        }
+
+        function filtrarJogos(tipo) {
+            filtroAtual = tipo;
+            ['todos', 'abertos', 'finalizados'].forEach(t => {
+                const btn = document.getElementById(`btn-filtro-${t}`);
+                if (t === tipo) {
+                    btn.className = "bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shrink-0";
+                } else {
+                    btn.className = "bg-slate-950 text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shrink-0";
+                }
+            });
+            renderizarJogos();
+        }
+
+        function renderizarJogos() {
             const adminDiv = document.getElementById('lista-jogos-admin');
             adminDiv.innerHTML = '';
 
-            juegos.forEach(j => {
-                const palpitesDoJogo = palpites.filter(p => p.jogo_id === j.id);
+            let jogosFiltrados = cacheJogos;
+            if (filtroAtual === 'abertos') jogosFiltrados = cacheJogos.filter(j => !j.encerrado);
+            if (filtroAtual === 'finalizados') jogosFiltrados = cacheJogos.filter(j => j.encerrado);
+
+            if (jogosFiltrados.length === 0) {
+                adminDiv.innerHTML = `<div class="text-center py-8 text-xs text-slate-600 italic border border-dashed border-slate-800 rounded-2xl">Nenhum bolão encontrado nesse filtro.</div>`;
+                return;
+            }
+
+            jogosFiltrados.forEach(j => {
+                const palpitesDoJogo = cachePalpites.filter(p => p.jogo_id === j.id);
                 
                 let htmlGerenciarPalpites = '';
                 palpitesDoJogo.forEach(p => {
@@ -79,8 +117,11 @@
                 const seuLucro = caixaBruto * 0.10;
 
                 let infoLucroAdmin = '';
+                let botaoCompartilharWhats = '';
                 if(j.encerrado) {
                     infoLucroAdmin = `<span class="text-[10px] text-amber-400 font-black uppercase tracking-wider block mt-1">💰 Seu Lucro Líquido (10%): R$ ${seuLucro.toFixed(2)}</span>`;
+                    // Botão dinâmico novo para gerar o texto do WhatsApp
+                    botaoCompartilharWhats = `<button onclick="compartilharResultadoWhats('${j.id}', '${j.time_a}', '${j.time_b}', ${j.gols_a}, ${j.gols_b})" class="text-[10px] bg-emerald-950 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-900/40 px-2.5 py-0.5 rounded-md font-bold transition">🟢 Copiar Resumo p/ Whats</button>`;
                 }
 
                 adminDiv.innerHTML += `
@@ -92,8 +133,9 @@
                                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total de Inscrições: ${totalInscricoes} (R$ ${caixaBruto.toFixed(2)})</span>
                                 ${infoLucroAdmin}
                             </div>
-                            <div class="flex items-center gap-2 self-start sm:self-center">
-                                <button onclick="excluirJogoCompleto('${j.id}', '${j.time_a}', '${j.time_b}')" class="text-[10px] bg-rose-950/40 text-rose-400 hover:bg-rose-900 hover:text-white border border-rose-900/40 px-2 py-0.5 rounded-md font-bold transition">🗑️ Excluir Bolão</button>
+                            <div class="flex items-center gap-2 self-start sm:self-center flex-wrap">
+                                ${botaoCompartilharWhats}
+                                <button onclick="excluirJogoCompleto('${j.id}', '${j.time_a}', '${j.time_b}')" class="text-[10px] bg-rose-950/40 text-rose-400 hover:bg-rose-900 hover:text-white border border-rose-900/40 px-2 py-0.5 rounded-md font-bold transition">🗑️ Excluir</button>
                                 <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${j.encerrado ? 'bg-slate-950 text-slate-500 border border-slate-800' : 'bg-green-500/10 text-green-400 border border-green-500/20'}">
                                     ${j.encerrado ? 'Finalizado' : 'Aberto'}
                                 </span>
@@ -101,7 +143,6 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            
                             <div class="space-y-3">
                                 <h4 class="text-[11px] font-bold text-green-400 uppercase tracking-wider">📥 Inserir Entrada do Whats</h4>
                                 <div class="flex gap-1.5 items-center">
@@ -143,6 +184,27 @@
             });
         }
 
+        async function compartilharResultadoWhats(jogoId, timeA, timeB, golsA, golsB) {
+            const { data: ganhadores } = await _supabase.from('ganhadores_jogos').select('nome_ganhador').eq('jogo_id', jogoId);
+            const palpitesDoJogo = cachePalpites.filter(p => p.jogo_id === jogoId);
+            const totalArrecadado = palpitesDoJogo.length * 5.00;
+            const premioLiquido = totalArrecadado * 0.90;
+
+            let texto = `🏁 *BOLÃO DO JACIM - RESULTADO OPERACIONAL* 🏁\n\n⚽ *${timeA} ${golsA} × ${golsB} ${timeB}*\n\n🏆 *GANHADORES DA RODADA:*`;
+            
+            if (ganhadores && ganhadores.length > 0) {
+                const valorCadaUm = premioLiquido / ganhadores.length;
+                ganhadores.forEach(g => {
+                    texto += `\n👉 *${g.nome_ganhador}* (Faturou: R$ ${valorCadaUm.toFixed(2)})`;
+                });
+            } else {
+                texto += `\n❌ Não houve acertadores do placar exato nesta rodada!`;
+            }
+            
+            navigator.clipboard.writeText(texto);
+            alert("📋 Resumo contábil copiado com sucesso! Só colar no grupo do WhatsApp.");
+        }
+
         async function cadastrarJogo() {
             const timeA = document.getElementById('add-time-a').value.trim();
             const timeB = document.getElementById('add-time-b').value.trim();
@@ -160,7 +222,7 @@
             
             await _supabase.from('palpites').insert([{ 
                 nome_apostador: nome, 
-                jogo_id: juegoId, 
+                jogo_id: jogoId, 
                 palpite_a: palA, 
                 palpite_b: palB,
                 criado_em: new Date().toISOString()
@@ -169,7 +231,6 @@
             document.getElementById(`whats-nome-${jogoId}`).value = '';
             document.getElementById(`whats-pal-a-${jogoId}`).value = '';
             document.getElementById(`whats-pal-b-${jogoId}`).value = '';
-            
             carregarDados();
         }
 
@@ -180,19 +241,19 @@
         }
 
         async function excluirJogoCompleto(jogoId, timeA, timeB) {
-            if (!confirm(`⚠️ ALERTA MÁXIMO:\nVocê tem certeza que deseja EXCLUIR DEFINITIVAMENTE o bolão de "${timeA} × ${timeB}"?\n\nIsso apagará todos os palpites cadastrados nele e sumirá com o card do site dos clientes!`)) return;
+            if (!confirm(`⚠️ Você quer deletar o jogo de "${timeA} × ${timeB}"?`)) return;
             await _supabase.from('ganhadores_jogos').delete().eq('jogo_id', jogoId);
             await _supabase.from('palpites').delete().eq('jogo_id', jogoId);
             await _supabase.from('jogos').delete().eq('id', jogoId);
-            alert("Bolão e palpites excluídos com sucesso!");
+            alert("Bolão excluído!");
             carregarDados();
         }
 
         async function reabrirJogo(jogoId) {
-            if (!confirm("Atenção: Isso vai cancelar os ganhadores atuais e reabrir o mercado para você corrigir o placar. Continuar?")) return;
+            if (!confirm("Deseja reabrir o bolão?")) return;
             await _supabase.from('ganhadores_jogos').delete().eq('jogo_id', jogoId);
             await _supabase.from('jogos').update({ encerrado: false, gols_a: null, gols_b: null }).eq('id', jogoId);
-            alert("Bolão reaberto com sucesso! Digite o placar correto e feche novamente.");
+            alert("Bolão reaberto!");
             carregarDados();
         }
 
@@ -240,6 +301,7 @@
         }
 
         carregarDados();
+        setInterval(carregarDados, 10000);
     </script>
 </body>
 </html>
