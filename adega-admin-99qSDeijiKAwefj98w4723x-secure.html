@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚙️ PAINEL ADMINISTRATIVO - BOLÃO DA ADEGA</title>
+    <title>⚙️ PAINEL ADMINISTRATIVO - BOLÃO DO JACIM</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -13,7 +13,7 @@
         
         <div class="bg-gradient-to-r from-red-950/40 to-slate-900 border border-red-900/60 p-4 md:p-5 rounded-2xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-                <h1 class="text-base md:text-lg font-black text-red-400 uppercase tracking-wider">⚙️ Gestão Secreta - Bolão da Adega</h1>
+                <h1 class="text-base md:text-lg font-black text-red-400 uppercase tracking-wider">⚙️ Gestão Secreta - Bolão do Jacim</h1>
                 <p class="text-xs text-slate-400 mt-0.5">Lançamento de apostas, rateio de caixas e auditoria interna.</p>
             </div>
             <button onclick="carregarDados()" class="w-full sm:w-auto text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2.5 sm:py-1.5 rounded-xl font-bold transition">🔄 Atualizar Banco</button>
@@ -41,14 +41,14 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function carregarDados() {
-            const { data: jogos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
+            const { data: juegos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
             const { data: palpites } = await _supabase.from('palpites').select('*');
-            if (!jogos || !palpites) return;
+            if (!juegos || !palpites) return;
 
             const adminDiv = document.getElementById('lista-jogos-admin');
             adminDiv.innerHTML = '';
 
-            jogos.forEach(j => {
+            juegos.forEach(j => {
                 const palpitesDoJogo = palpites.filter(p => p.jogo_id === j.id);
                 
                 let htmlGerenciarPalpites = '';
@@ -76,7 +76,6 @@
 
                 const totalInscricoes = palpitesDoJogo.length;
                 const caixaBruto = totalInscricoes * 5.00;
-                // Ajustado aqui para 10% de margem administrativa
                 const seuLucro = caixaBruto * 0.10;
 
                 let infoLucroAdmin = '';
@@ -161,7 +160,7 @@
             
             await _supabase.from('palpites').insert([{ 
                 nome_apostador: nome, 
-                jogo_id: jogoId, 
+                jogo_id: juegoId, 
                 palpite_a: palA, 
                 palpite_b: palB,
                 criado_em: new Date().toISOString()
@@ -217,7 +216,6 @@
             });
 
             const bruto = lista.length * 5.00;
-            // Ajustado aqui também para calcular os prêmios com base nos 10% de lucro da administração
             const lucroOculto = bruto * 0.10;
             const premioLiquido = bruto - lucroOculto;
 
