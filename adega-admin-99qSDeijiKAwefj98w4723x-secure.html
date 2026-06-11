@@ -92,9 +92,12 @@
                                 <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total de Inscrições: ${totalInscricoes} (R$ ${caixaBruto.toFixed(2)})</span>
                                 ${infoLucroAdmin}
                             </div>
-                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md self-start sm:self-center ${j.encerrado ? 'bg-slate-950 text-slate-500 border border-slate-800' : 'bg-green-500/10 text-green-400 border border-green-500/20'}">
-                                ${j.encerrado ? 'Finalizado' : 'Aberto'}
-                            </span>
+                            <div class="flex items-center gap-2 self-start sm:self-center">
+                                <button onclick="excluirJogoCompleto('${j.id}', '${j.time_a}', '${j.time_b}')" class="text-[10px] bg-rose-950/40 text-rose-400 hover:bg-rose-900 hover:text-white border border-rose-900/40 px-2 py-0.5 rounded-md font-bold transition">🗑️ Excluir Bolão</button>
+                                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${j.encerrado ? 'bg-slate-950 text-slate-500 border border-slate-800' : 'bg-green-500/10 text-green-400 border border-green-500/20'}">
+                                    ${j.encerrado ? 'Finalizado' : 'Aberto'}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -176,15 +179,26 @@
             carregarDados();
         }
 
-        async function reabrirJogo(jogoId) {
-            if (!confirm("Atenção: Isso vai cancelar os ganhadores atuais e reabrir o mercado para você corrigir o placar. Continuar?")) return;
+        async function excluirJogoCompleto(jogoId, timeA, timeB) {
+            if (!confirm(`⚠️ ALERTA MÁXIMO:\nVocê tem certeza que deseja EXCLUIR DEFINITIVAMENTE o bolão de "${timeA} × ${timeB}"?\n\nIsso apagará todos os palpites cadastrados nele e sumirá com o card do site dos clientes!`)) return;
             
-            // 1. Apaga os ganhadores vinculados a esse jogo
+            // 1. Limpa os ganhadores atrelados ao jogo (se houver)
             await _supabase.from('ganhadores_jogos').delete().eq('jogo_id', jogoId);
             
-            // 2. Reseta o status do jogo para Aberto e remove os gols antigos
-            await _supabase.from('jogos').update({ encerrado: false, gols_a: null, gols_b: null }).eq('id', jogoId);
+            // 2. Limpa os palpites enviados para esse jogo
+            await _supabase.from('palpites').delete().eq('jogo_id', jogoId);
             
+            // 3. Deleta o jogo em si
+            await _supabase.from('jogos').delete().eq('id', jogoId);
+            
+            alert("Bolão e palpites excluídos com sucesso!");
+            carregarDados();
+        }
+
+        async function reabrirJogo(jogoId) {
+            if (!confirm("Atenção: Isso vai cancelar os ganhadores atuais e reabrir o mercado para você corrigir o placar. Continuar?")) return;
+            await _supabase.from('ganhadores_jogos').delete().eq('jogo_id', jogoId);
+            await _supabase.from('jogos').update({ encerrado: false, gols_a: null, gols_b: null }).eq('id', jogoId);
             alert("Bolão reaberto com sucesso! Digite o placar correto e feche novamente.");
             carregarDados();
         }
