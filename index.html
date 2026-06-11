@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolão do Jacim</title>
+    <title>Bolão dos Amigos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -13,7 +13,7 @@
         <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-2xl">🏆</span>
-                <h1 class="text-base md:text-lg font-extrabold tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Bolão do Jacim</h1>
+                <h1 class="text-base md:text-lg font-extrabold tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase">Bolão dos Amigos</h1>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="compartilharSite()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1 transition cursor-pointer">
@@ -46,7 +46,7 @@
             </div>
             
             <div class="flex shrink-0">
-                <a href="https://wa.me/558897263753?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20Bol%C3%A3o%20do%20Jacim!%0A%0A%F0%9F%93%8C%20JOGO%3A%20%0A%F0%9F%91%A4%20NOME%20DO%20APOSTADOR%3A%20%0A%E2%9A%BD%20PLACAR%20(Ex%3A%202x1)%3A%20%0A%0A%E2%9A%A0%EF%B8%8F%20N%C3%83O%20ESQUE%C3%87A%20DE%20ANEXAR%20O%20COMPROVANTE%20DO%20PIX%20AQUI%20EMBAIXO!" 
+                <a href="https://wa.me/5588997263753?text=Fala%20Jacim,%20quero%20mandar%20um%20palpite%20para%20o%20Bol%C3%A3o%20dos%20Amigos!%0A%0A%F0%9F%93%8C%20JOGO%3A%20%0A%F0%9F%91%A4%20NOME%20DO%20APOSTADOR%3A%20%0A%E2%9A%BD%20PLACAR%20(Ex%3A%202x1)%3A%20%0A%0A%E2%9A%A0%EF%B8%8F%20N%C3%83O%20ESQUE%C3%87A%20DE%20ANEXAR%20O%20COMPROVANTE%20DO%20PIX%20AQUI%20EMBAIXO!" 
                    target="_blank" 
                    class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold text-xs uppercase tracking-wider px-5 py-4 rounded-xl shadow-lg border border-green-500/30 flex items-center justify-center gap-2 transition duration-200 hover:scale-[1.02] active:scale-[0.98]">
                     <span>💬</span> Enviar Palpite no Whats
@@ -126,13 +126,30 @@
             }, 2500);
         }
 
-        function compartirSite() {
-            const texto = `🏆 *BOLÃO DO JACIM* 🏆\n\nVenha faturar nos palpites dos jogos de hoje! Acesse o site oficial, mande seu placar e acompanhe ao vivo:\n🔗 ${window.location.href}`;
-            if (navigator.share) {
-                navigator.share({ title: 'Bolão do Jacim', text: texto, url: window.location.href });
+        function compartilharSite() {
+            const texto = `🏆 *BOLÃO DOS AMIGOS* 🏆\n\nVenha faturar nos palpites dos jogos de hoje! Acesse o site oficial, mande seu placar e acompanhe ao vivo:\n🔗 ${window.location.href}`;
+            
+            if (navigator.share && window.location.protocol === 'https:') {
+                navigator.share({
+                    title: 'Bolão dos Amigos',
+                    text: texto,
+                    url: window.location.href
+                }).catch(() => {});
             } else {
-                navigator.clipboard.writeText(texto);
-                alert("Link e mensagem copiados! Só colar no WhatsApp.");
+                const inputProvisorio = document.createElement('textarea');
+                inputProvisorio.value = texto;
+                document.body.appendChild(inputProvisorio);
+                inputProvisorio.select();
+                inputProvisorio.setSelectionRange(0, 99999);
+                
+                try {
+                    document.execCommand('copy');
+                    alert("📢 Link e mensagem do bolão copiados com sucesso!\n\nAgora é só abrir o WhatsApp e colar no grupo dos amigos.");
+                } catch (err) {
+                    alert("Ops, não foi possível copiar automaticamente. Copie o link direto da barra do seu navegador!");
+                }
+                
+                document.body.removeChild(inputProvisorio);
             }
         }
 
@@ -160,7 +177,7 @@
             const ordenados = Object.entries(contagem).sort((a, b) => b[1] - a[1]).slice(0, 3);
             
             let html = `<div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60 text-[11px] text-slate-400 space-y-1">
-                            <span class="text-amber-400 font-bold block uppercase tracking-wider text-[10px]">🔥 Favoritos do Jacim:</span>`;
+                            <span class="text-amber-400 font-bold block uppercase tracking-wider text-[10px]">🔥 Favoritos do Grupo:</span>`;
             ordenados.forEach(([placar, qtd]) => {
                 html += `<div class="flex justify-between font-mono"><span>👉 Placar ${placar}</span> <span class="text-slate-500">${qtd} ${qtd > 1 ? 'palpites' : 'palpite'}</span></div>`;
             });
