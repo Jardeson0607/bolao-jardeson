@@ -19,7 +19,7 @@
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-8 mt-4">
+    <main class="max-w-4xl mx-auto p-4 space-y-5 mt-4">
         
         <div class="bg-gradient-to-br from-slate-900 to-slate-900/60 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="absolute -right-10 -top-10 text-8xl opacity-5 group-hover:scale-110 transition duration-500 pointer-events-none">⚽</div>
@@ -36,7 +36,37 @@
             </div>
         </div>
 
-        <div class="space-y-4">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <button onclick="toggleRegulamento()" class="w-full p-4 flex items-center justify-between bg-slate-900 hover:bg-slate-850 transition cursor-pointer text-left">
+                <span class="text-sm font-bold tracking-wider text-amber-400 uppercase flex items-center gap-2">
+                    <span>📋</span> Regulamento Oficial do Jogo
+                </span>
+                <span id="seta-regulamento" class="text-xs text-slate-400 transition-transform duration-200">▼ Clique para abrir</span>
+            </button>
+            
+            <div id="conteudo-regulamento" class="hidden border-t border-slate-800/60 p-5 bg-slate-900/40">
+                <div class="grid gap-4 sm:grid-cols-2 text-xs text-slate-400">
+                    <div class="flex gap-2.5 items-start bg-slate-950/40 p-3 rounded-xl border border-slate-900/50">
+                        <span class="text-base shrink-0">💰</span>
+                        <p><strong class="text-slate-200 block mb-0.5">Valor da Entrada:</strong> Cada palpite custa exatamente R$ 5,00. O palpite só é validado e inserido no site após a confirmação do pagamento.</p>
+                    </div>
+                    <div class="flex gap-2.5 items-start bg-slate-950/40 p-3 rounded-xl border border-slate-900/50">
+                        <span class="text-base shrink-0">⏰</span>
+                        <p><strong class="text-slate-200 block mb-0.5">Prazo Limite:</strong> As apostas para qualquer partida se encerram obrigatoriamente 10 minutos antes do horário oficial do início do jogo.</p>
+                    </div>
+                    <div class="flex gap-2.5 items-start bg-slate-950/40 p-3 rounded-xl border border-slate-900/50">
+                        <span class="text-base shrink-0">🎯</span>
+                        <p><strong class="text-slate-200 block mb-0.5">Critério de Premiação:</strong> O prêmio da rodada é destinado exclusivamente a quem acertar o placar exato da partida. Caso haja mais de um acertador, o montante da premiação será rateado igualmente entre os vencedores.</p>
+                    </div>
+                    <div class="flex gap-2.5 items-start bg-slate-950/40 p-3 rounded-xl border border-slate-900/50">
+                        <span class="text-base shrink-0">🔒</span>
+                        <p><strong class="text-slate-200 block mb-0.5">Ausência de Acertadores:</strong> Caso nenhum participante acerte o placar exato da partida, o valor arrecadado fica retido para a cobertura de custos operacionais e manutenção técnica da plataforma, não havendo devolução de valores ou prêmios por aproximação.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4 pt-2">
             <h2 class="text-md font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 Partidas e Palpites Cadastrados
@@ -51,6 +81,19 @@
         const SUPABASE_URL = "https://vjbjbjdqsjibxfeguger.supabase.co"; 
         const SUPABASE_KEY = "sb_publishable_IsntZwbiFHOs3RuhFnFs6g_8xA6-z-2"; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function toggleRegulamento() {
+            const conteudo = document.getElementById('conteudo-regulamento');
+            const seta = document.getElementById('seta-regulamento');
+            
+            if (conteudo.classList.contains('hidden')) {
+                conteudo.classList.remove('hidden');
+                seta.innerText = "▲ Clique para fechar";
+            } else {
+                conteudo.classList.add('hidden');
+                seta.innerText = "▼ Clique para abrir";
+            }
+        }
 
         function gerarSigla(nomeTime) {
             let limpo = nomeTime.trim().toUpperCase().replace(/\s+/g, ' ');
@@ -85,7 +128,6 @@
 
                 let htmlPalpites = '';
                 palpitesDoJogo.forEach(p => {
-                    // Formata a data e hora do palpite (Ex: 12/06 - 19:30)
                     let tagDataHora = '';
                     if (p.criado_em) {
                         const d = new Date(p.criado_em);
@@ -98,7 +140,7 @@
 
                     htmlPalpites += `
                         <div class="flex justify-between items-center text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/40 shadow-sm">
-                            <span class="text-slate-300 font-semibold tracking-wide truncate pr-2">${p.nome_apostador}${tagDataHora}</span>
+                            <span class="text-slate-300 font-semibold tracking-wide truncate pr-2">${p.nome_apostador} ${tagDataHora}</span>
                             <div class="bg-slate-800 text-amber-400 font-mono font-bold px-2.5 py-1 rounded-md border border-slate-700/60 flex items-center gap-1.5 min-w-[115px] justify-center tracking-tight shrink-0">
                                 <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaA}</span>
                                 <span>${p.palpite_a} × ${p.palpite_b}</span>
