@@ -76,11 +76,12 @@
 
                 const totalInscricoes = palpitesDoJogo.length;
                 const caixaBruto = totalInscricoes * 5.00;
-                const seuLucro = caixaBruto * 0.20;
+                // Ajustado aqui para 10% de margem administrativa
+                const seuLucro = caixaBruto * 0.10;
 
                 let infoLucroAdmin = '';
                 if(j.encerrado) {
-                    infoLucroAdmin = `<span class="text-[10px] text-amber-400 font-black uppercase tracking-wider block mt-1">💰 Seu Lucro Líquido: R$ ${seuLucro.toFixed(2)}</span>`;
+                    infoLucroAdmin = `<span class="text-[10px] text-amber-400 font-black uppercase tracking-wider block mt-1">💰 Seu Lucro Líquido (10%): R$ ${seuLucro.toFixed(2)}</span>`;
                 }
 
                 adminDiv.innerHTML += `
@@ -181,16 +182,9 @@
 
         async function excluirJogoCompleto(jogoId, timeA, timeB) {
             if (!confirm(`⚠️ ALERTA MÁXIMO:\nVocê tem certeza que deseja EXCLUIR DEFINITIVAMENTE o bolão de "${timeA} × ${timeB}"?\n\nIsso apagará todos os palpites cadastrados nele e sumirá com o card do site dos clientes!`)) return;
-            
-            // 1. Limpa os ganhadores atrelados ao jogo (se houver)
             await _supabase.from('ganhadores_jogos').delete().eq('jogo_id', jogoId);
-            
-            // 2. Limpa os palpites enviados para esse jogo
             await _supabase.from('palpites').delete().eq('jogo_id', jogoId);
-            
-            // 3. Deleta o jogo em si
             await _supabase.from('jogos').delete().eq('id', jogoId);
-            
             alert("Bolão e palpites excluídos com sucesso!");
             carregarDados();
         }
@@ -223,7 +217,8 @@
             });
 
             const bruto = lista.length * 5.00;
-            const lucroOculto = bruto * 0.20;
+            // Ajustado aqui também para calcular os prêmios com base nos 10% de lucro da administração
+            const lucroOculto = bruto * 0.10;
             const premioLiquido = bruto - lucroOculto;
 
             let ganhadoresFinais = cravados.length > 0 ? cravados : tendencia;
@@ -234,8 +229,8 @@
 
             let resumo = `💸 RELATÓRIO CONTÁBIL DE FECHAMENTO\n\n`;
             resumo += `• Caixa Bruto Arrecadado: R$ ${bruto.toFixed(2)} (${lista.length} entradas)\n`;
-            resumo += `• Sua Margem de Operação (20%): R$ ${lucroOculto.toFixed(2)}\n`;
-            resumo += `• Dinheiro Líquido para Prêmios: R$ ${premioLiquido.toFixed(2)}\n\n`;
+            resumo += `• Sua Margem de Operação (10%): R$ ${lucroOculto.toFixed(2)}\n`;
+            resumo += `• Dinheiro Líquido para Prêmios (90%): R$ ${premioLiquido.toFixed(2)}\n\n`;
             if (ganhadoresFinais.length > 0) {
                 resumo += `💰 FAZER O PIX DA PREMIAÇÃO PARA:\n`;
                 ganhadoresFinais.forEach(n => resumo += `👉 ${n}: R$ ${(premioLiquido / ganhadoresFinais.length).toFixed(2)}\n`);
