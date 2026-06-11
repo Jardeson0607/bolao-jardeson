@@ -85,14 +85,21 @@
 
                 let htmlPalpites = '';
                 palpitesDoJogo.forEach(p => {
-                    // Pega o horário correto do palpite
-                    const horaPalpite = p.criado_em ? new Date(p.criado_em).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
-                    const tagHora = horaPalpite ? `<span class="text-[10px] text-slate-500 font-mono font-normal ml-1">(${horaPalpite})</span>` : '';
+                    // Formata a data e hora do palpite (Ex: 12/06 - 19:30)
+                    let tagDataHora = '';
+                    if (p.criado_em) {
+                        const d = new Date(p.criado_em);
+                        const dia = String(d.getDate()).padStart(2, '0');
+                        const mes = String(d.getMonth() + 1).padStart(2, '0');
+                        const hora = String(d.getHours()).padStart(2, '0');
+                        const min = String(d.getMinutes()).padStart(2, '0');
+                        tagDataHora = `<span class="text-[10px] text-slate-500 font-mono font-normal ml-1">(${dia}/${mes} - ${hora}:${min})</span>`;
+                    }
 
                     htmlPalpites += `
                         <div class="flex justify-between items-center text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/40 shadow-sm">
-                            <span class="text-slate-300 font-semibold tracking-wide">${p.nome_apostador}${tagHora}</span>
-                            <div class="bg-slate-800 text-amber-400 font-mono font-bold px-2.5 py-1 rounded-md border border-slate-700/60 flex items-center gap-1.5 min-w-[115px] justify-center tracking-tight">
+                            <span class="text-slate-300 font-semibold tracking-wide truncate pr-2">${p.nome_apostador}${tagDataHora}</span>
+                            <div class="bg-slate-800 text-amber-400 font-mono font-bold px-2.5 py-1 rounded-md border border-slate-700/60 flex items-center gap-1.5 min-w-[115px] justify-center tracking-tight shrink-0">
                                 <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaA}</span>
                                 <span>${p.palpite_a} × ${p.palpite_b}</span>
                                 <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaB}</span>
@@ -108,7 +115,6 @@
                         const premioLiquido = totalArrecadado * 0.80; 
                         const valorCadaUm = premioLiquido / ganhadoresDesteJogo.length;
 
-                        // Retirada a palavra "Recebe:" conforme pedido
                         const textoGanhadores = ganhadoresDesteJogo.map(g => `${g.nome_ganhador} (R$ ${valorCadaUm.toFixed(2)})`).join(', ');
 
                         htmlGanhadores = `
@@ -129,7 +135,6 @@
                     }
                 }
 
-                // Correção do fuso-horário adicionando as 3 horas subtraídas pelo formato UTC do banco
                 let dataFormatada = '--/--';
                 let horaFormatada = '--:--';
                 if (j.data_jogo) {
