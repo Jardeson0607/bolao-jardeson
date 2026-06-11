@@ -34,14 +34,20 @@
                     <p class="text-sm text-slate-400 leading-relaxed">Cada partida funciona como um bolão único e independente. Faça o Pix de <strong>R$ 5,00</strong> por palpite e envie o seu placar clicando no botão ao lado. <strong class="text-emerald-400">É obrigatório enviar o comprovante do PIX junto com o seu palpite!</strong></p>
                 </div>
                 
-                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3 max-w-md">
-                    <div class="min-w-0">
-                        <span class="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">🔑 Chave PIX (E-mail):</span>
-                        <span class="text-xs font-mono text-emerald-400 font-bold block truncate select-all">bolaojacim@gmail.com</span>
+                <div class="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl space-y-2.5 max-w-md shadow-inner">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <span class="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">🔑 Chave PIX (E-mail):</span>
+                            <span class="text-xs font-mono text-emerald-400 font-bold block truncate select-all">bolaojacim@gmail.com</span>
+                        </div>
+                        <button onclick="copiarPix(this)" class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1">
+                            <span>📋</span> <span>Copiar Chave</span>
+                        </button>
                     </div>
-                    <button onclick="copiarPix(this)" class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-3 py-2 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1">
-                        <span>📋</span> <span>Copiar Chave</span>
-                    </button>
+                    <div class="border-t border-slate-900 pt-2 flex flex-col sm:flex-row justify-between sm:items-center text-[11px] gap-1 text-slate-400 font-medium">
+                        <div><span class="text-slate-500">👤 Titular:</span> <span class="text-slate-300 font-semibold">Jardeson da Silva Magalhães</span></div>
+                        <div><span class="text-slate-500">🏦 Banco:</span> <span class="text-slate-300 font-semibold">Mercado Pago</span></div>
+                    </div>
                 </div>
             </div>
             
@@ -128,27 +134,20 @@
 
         function compartilharSite() {
             const texto = `🏆 *BOLÃO DOS AMIGOS* 🏆\n\nVenha faturar nos palpites dos jogos de hoje! Acesse o site oficial, mande seu placar e acompanhe ao vivo:\n🔗 ${window.location.href}`;
-            
             if (navigator.share && window.location.protocol === 'https:') {
-                navigator.share({
-                    title: 'Bolão dos Amigos',
-                    text: texto,
-                    url: window.location.href
-                }).catch(() => {});
+                navigator.share({ title: 'Bolão dos Amigos', text: texto, url: window.location.href }).catch(() => {});
             } else {
                 const inputProvisorio = document.createElement('textarea');
                 inputProvisorio.value = texto;
                 document.body.appendChild(inputProvisorio);
                 inputProvisorio.select();
                 inputProvisorio.setSelectionRange(0, 99999);
-                
                 try {
                     document.execCommand('copy');
                     alert("📢 Link e mensagem do bolão copiados com sucesso!\n\nAgora é só abrir o WhatsApp e colar no grupo dos amigos.");
                 } catch (err) {
-                    alert("Ops, não foi possível copiar automaticamente. Copie o link direto da barra do seu navegador!");
+                    alert("Ops, não foi possível copiar automaticamente.");
                 }
-                
                 document.body.removeChild(inputProvisorio);
             }
         }
@@ -159,11 +158,8 @@
             if (limpo === "REPUBLICA TCHECA") return "CZE";
             if (limpo === "ALEMANHA") return "GER";
             if (limpo === "INGLATERRA") return "ENG";
-            
             let palavras = limpo.split(' ').filter(p => p.length > 2);
-            if (palavras.length >= 2) {
-                return palavras[0][0] + palavras[1][0] + palavras[1][palavras[1].length - 1];
-            }
+            if (palavras.length >= 2) return palavras[0][0] + palavras[1][0] + palavras[1][palavras[1].length - 1];
             return limpo.substring(0, 3);
         }
 
@@ -175,9 +171,7 @@
                 contagem[placar] = (contagem[placar] || 0) + 1;
             });
             const ordenados = Object.entries(contagem).sort((a, b) => b[1] - a[1]).slice(0, 3);
-            
-            let html = `<div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60 text-[11px] text-slate-400 space-y-1">
-                            <span class="text-amber-400 font-bold block uppercase tracking-wider text-[10px]">🔥 Favoritos do Grupo:</span>`;
+            let html = `<div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/60 text-[11px] text-slate-400 space-y-1"><span class="text-amber-400 font-bold block uppercase tracking-wider text-[10px]">🔥 Favoritos do Grupo:</span>`;
             ordenados.forEach(([placar, qtd]) => {
                 html += `<div class="flex justify-between font-mono"><span>👉 Placar ${placar}</span> <span class="text-slate-500">${qtd} ${qtd > 1 ? 'palpites' : 'palpite'}</span></div>`;
             });
@@ -189,7 +183,6 @@
             const { data: jogos } = await _supabase.from('jogos').select('*').order('data_jogo', { ascending: true });
             const { data: palpites } = await _supabase.from('palpites').select('*');
             const { data: ganhadores } = await _supabase.from('ganhadores_jogos').select('*');
-            
             if (!jogos || !palpites) return;
 
             const listaDiv = document.getElementById('lista-jogos-publico');
@@ -198,12 +191,14 @@
             jogos.forEach(j => {
                 const palpitesDoJogo = palpites.filter(p => p.jogo_id === j.id);
                 const ganhadoresDesteJogo = ganhadores ? ganhadores.filter(g => g.jogo_id === j.id) : [];
-                
                 const siglaA = gerarSigla(j.time_a);
                 const siglaB = gerarSigla(j.time_b);
 
-                const totalArrecadado = palpitesDoJogo.length * 5.00;
-                const premioLiquido = totalArrecadado * 0.90;
+                // NOVA MATEMÁTICA REDONDA: Tira R$ 5,00 a cada bloco completo de 10 inscrições
+                const totalInscricoes = palpitesDoJogo.length;
+                const bruto = totalInscricoes * 5.00;
+                const descontoOculto = Math.floor(totalInscricoes / 10) * 5.00;
+                const premioLiquido = bruto - descontoOculto;
 
                 let htmlPalpites = '';
                 palpitesDoJogo.forEach(p => {
@@ -216,7 +211,6 @@
                         const min = String(d.getMinutes()).padStart(2, '0');
                         tagDataHora = `<span class="text-[10px] text-slate-500 font-mono font-normal ml-1">(${dia}/${mes} - ${hora}:${min})</span>`;
                     }
-
                     htmlPalpites += `
                         <div class="flex justify-between items-center text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/40 shadow-sm">
                             <span class="text-slate-300 font-semibold tracking-wide truncate pr-2">${p.nome_apostador} ${tagDataHora}</span>
@@ -225,8 +219,7 @@
                                 <span>${p.palpite_a} × ${p.palpite_b}</span>
                                 <span class="text-[9px] opacity-50 text-slate-400 font-sans font-bold">${siglaB}</span>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
 
                 let htmlGanhadores = '';
@@ -237,23 +230,14 @@
                         htmlGanhadores = `
                             <div class="mt-3.5 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl flex items-start gap-2">
                                 <span class="text-base mt-0.5">🏆</span>
-                                <div>
-                                    <span class="text-[11px] font-bold text-emerald-400 block uppercase tracking-wider">Premiação do Vencedor:</span>
-                                    <p class="text-xs text-emerald-300 font-semibold mt-0.5">${textoGanhadores}</p>
-                                </div>
-                            </div>
-                        `;
+                                <div><span class="text-[11px] font-bold text-emerald-400 block uppercase tracking-wider">Premiação do Vencedor:</span><p class="text-xs text-emerald-300 font-semibold mt-0.5">${textoGanhadores}</p></div>
+                            </div>`;
                     } else {
-                        htmlGanhadores = `
-                            <div class="mt-3.5 bg-slate-800/40 border border-slate-700/40 p-3 rounded-xl text-xs text-slate-400 italic flex items-center gap-2">
-                                <span>🔒</span> Bolão encerrado sem vencedor!
-                            </div>
-                        `;
+                        htmlGanhadores = `<div class="mt-3.5 bg-slate-800/40 border border-slate-700/40 p-3 rounded-xl text-xs text-slate-400 italic flex items-center gap-2"><span>🔒</span> Bolão encerrado sem vencedor!</div>`;
                     }
                 }
 
-                let dataFormatada = '--/--';
-                let horaFormatada = '--:--';
+                let dataFormatada = '--/--'; let horaFormatada = '--:--';
                 if (j.data_jogo) {
                     const dataJogoObjeto = new Date(j.data_jogo);
                     dataJogoObjeto.setHours(dataJogoObjeto.getHours() + 3);
@@ -261,51 +245,37 @@
                     horaFormatada = dataJogoObjeto.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
                 }
 
-                const larguraBarra = Math.min((palpitesDoJogo.length / 30) * 100, 100); 
+                const larguraBarra = Math.min((totalInscricoes / 30) * 100, 100);
 
                 listaDiv.innerHTML += `
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition duration-300 hover:border-slate-700 space-y-4">
                         <div>
                             <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 mb-3">
                                 <div class="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider mb-1.5">
-                                    <span class="text-slate-400">💰 Prêmio Líquido Atual</span>
+                                    <span class="text-slate-400">💰 Prêmio Atual</span>
                                     <span class="text-green-400 font-mono font-black">R$ ${premioLiquido.toFixed(2)}</span>
                                 </div>
                                 <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                                     <div class="bg-gradient-to-r from-green-500 to-emerald-400 h-full transition-all duration-500" style="width: ${larguraBarra}%"></div>
                                 </div>
                             </div>
-
                             <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-3">
-                                <div class="flex items-center gap-1.5">
-                                    <span>📅 ${dataFormatada}</span>
-                                    <span>⏰ ${horaFormatada}</span>
-                                </div>
-                                <span class="${j.encerrado ? 'text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20' : 'text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20'}">
-                                    ${j.encerrado ? 'Finalizado' : 'Aberto'}
-                                </span>
+                                <div class="flex items-center gap-1.5"><span>📅 ${dataFormatada}</span><span>⏰ ${horaFormatada}</span></div>
+                                <span class="${j.encerrado ? 'text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20' : 'text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20'}">${j.encerrado ? 'Finalizado' : 'Aberto'}</span>
                             </div>
-                            
                             <div class="flex justify-between items-center gap-4 my-2">
                                 <span class="font-extrabold text-sm text-right flex-1 tracking-tight truncate">${j.time_a}</span>
-                                <div class="bg-slate-950 px-4 py-2 rounded-xl font-mono text-base font-black text-green-400 border border-slate-800 shadow-inner min-w-[70px] text-center">
-                                    ${j.encerrado ? `${j.gols_a} - ${j.gols_b}` : 'VS'}
-                                </div>
+                                <div class="bg-slate-950 px-4 py-2 rounded-xl font-mono text-base font-black text-green-400 border border-slate-800 shadow-inner min-w-[70px] text-center">${j.encerrado ? `${j.gols_a} - ${j.gols_b}` : 'VS'}</div>
                                 <span class="font-extrabold text-sm text-left flex-1 tracking-tight truncate">${j.time_b}</span>
                             </div>
                         </div>
-
                         ${!j.encerrado ? obterFavoritos(palpitesDoJogo) : ''}
                         ${htmlGanhadores}
-
                         <div class="border-t border-slate-800/80 pt-3 space-y-2">
-                            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Palpites Registrados (${palpitesDoJogo.length})</h4>
-                            <div class="grid gap-1.5 max-h-36 overflow-y-auto pr-1">
-                                ${htmlPalpites || '<p class="text-xs text-slate-600 italic py-1">Nenhum palpite computado.</p>'}
-                            </div>
+                            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Palpites Registrados (${totalInscricoes})</h4>
+                            <div class="grid gap-1.5 max-h-36 overflow-y-auto pr-1">${htmlPalpites || '<p class="text-xs text-slate-600 italic py-1">Nenhum palpite computado.</p>'}</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
