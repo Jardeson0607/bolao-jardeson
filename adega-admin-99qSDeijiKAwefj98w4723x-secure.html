@@ -57,7 +57,11 @@
 
             cacheJogos = jogos;
             cachePalpites = palpites;
-            renderizarJogos();
+            
+            // PROTEÇÃO CONTRA SUMIÇO DE LETRAS: Só atualiza a tela se o usuário não estiver digitando nada!
+            if (document.activeElement.tagName !== 'INPUT') {
+                renderizarJogos();
+            }
         }
 
         function filtrarJogos(tipo) {
@@ -75,6 +79,22 @@
 
         function renderizarJogos() {
             const adminDiv = document.getElementById('lista-jogos-admin');
+            
+            // Salva os valores que você já digitou antes de recarregar a tela (Garante dupla proteção)
+            const valoresPreenchidos = {};
+            cacheJogos.forEach(j => {
+                const campoNome = document.getElementById(`whats-nome-${j.id}`);
+                const campoA = document.getElementById(`whats-pal-a-${j.id}`);
+                const campoB = document.getElementById(`whats-pal-b-${j.id}`);
+                if (campoNome) {
+                    valoresPreenchidos[j.id] = {
+                        nome: campoNome.value,
+                        palA: campoA.value,
+                        palB: campoB.value
+                    };
+                }
+            });
+
             adminDiv.innerHTML = '';
 
             let jogosFiltrados = cacheJogos;
@@ -120,7 +140,6 @@
                 let botaoCompartilharWhats = '';
                 if(j.encerrado) {
                     infoLucroAdmin = `<span class="text-[10px] text-amber-400 font-black uppercase tracking-wider block mt-1">💰 Seu Lucro Líquido (10%): R$ ${seuLucro.toFixed(2)}</span>`;
-                    // Botão dinâmico novo para gerar o texto do WhatsApp
                     botaoCompartilharWhats = `<button onclick="compartilharResultadoWhats('${j.id}', '${j.time_a}', '${j.time_b}', ${j.gols_a}, ${j.gols_b})" class="text-[10px] bg-emerald-950 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-900/40 px-2.5 py-0.5 rounded-md font-bold transition">🟢 Copiar Resumo p/ Whats</button>`;
                 }
 
@@ -181,6 +200,13 @@
                         </div>
                     </div>
                 `;
+
+                // Devolve os valores para os inputs após redesenhar a tela
+                if (valoresPreenchidos[j.id]) {
+                    document.getElementById(`whats-nome-${j.id}`).value = valoresPreenchidos[j.id].nome;
+                    document.getElementById(`whats-pal-a-${j.id}`).value = valoresPreenchidos[j.id].palA;
+                    document.getElementById(`whats-pal-b-${j.id}`).value = valoresPreenchidos[j.id].palB;
+                }
             });
         }
 
@@ -190,19 +216,15 @@
             const totalArrecadado = palpitesDoJogo.length * 5.00;
             const premioLiquido = totalArrecadado * 0.90;
 
-            let texto = `🏁 *BOLÃO DO JACIM - RESULTADO OPERACIONAL* 🏁\n\n⚽ *${timeA} ${golsA} × ${golsB} ${timeB}*\n\n🏆 *GANHADORES DA RODADA:*`;
-            
+            let texto = `🏁 *BOLÃO DO JACIM - RESULTADO* 🏁\n\n⚽ *${timeA} ${golsA} × ${golsB} ${timeB}*\n\n🏆 *GANHADORES DA RODADA:*`;
             if (ganhadores && ganhadores.length > 0) {
                 const valorCadaUm = premioLiquido / ganhadores.length;
-                ganhadores.forEach(g => {
-                    texto += `\n👉 *${g.nome_ganhador}* (Faturou: R$ ${valorCadaUm.toFixed(2)})`;
-                });
+                ganhadores.forEach(g => { texto += `\n👉 *${g.nome_ganhador}* (R$ ${valorCadaUm.toFixed(2)})`; });
             } else {
                 texto += `\n❌ Não houve acertadores do placar exato nesta rodada!`;
             }
-            
             navigator.clipboard.writeText(texto);
-            alert("📋 Resumo contábil copiado com sucesso! Só colar no grupo do WhatsApp.");
+            alert("📋 Resumo contábil copiado! Só colar no grupo do WhatsApp.");
         }
 
         async function cadastrarJogo() {
@@ -241,7 +263,7 @@
         }
 
         async function excluirJogoCompleto(jogoId, timeA, timeB) {
-            if (!confirm(`⚠️ Você quer deletar o jogo de "${timeA} × ${timeB}"?`)) return;
+            if (!confirm(`⚠️ Excluir bolão de "${timeA} × ${timeB}"?`)) return;
             await _supabase.from('ganhadores_jogos').delete().eq('jogo_id', jogoId);
             await _supabase.from('palpites').delete().eq('jogo_id', jogoId);
             await _supabase.from('jogos').delete().eq('id', jogoId);
@@ -301,7 +323,7 @@
         }
 
         carregarDados();
-        setInterval(carregarDados, 10000);
+        setInterval(carregarDados, 10000); // Roda em background de forma segura
     </script>
 </body>
 </html>
